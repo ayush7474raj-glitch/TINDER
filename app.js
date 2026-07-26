@@ -2532,7 +2532,7 @@ window.addEventListener("beforeinstallprompt", (e) => {
 
   // Agar button hai to show karo
   const btn = document.getElementById("installBtn");
-  if (btn) btn.style.display = "block";
+  if (btn) btn.classList.remove("hidden");
 });
 
 async function installApp() {
@@ -2547,8 +2547,12 @@ async function installApp() {
   console.log(choice.outcome);
 
   deferredPrompt = null;
+   
+  document.getElementById("installBtn")?.classList.add("hidden");
 }
+                                                       
 
 window.addEventListener("appinstalled", () => {
   console.log("TINDER Installed");
+  document.getElementById("installBtn")?.classList.add("hidden");
 });
