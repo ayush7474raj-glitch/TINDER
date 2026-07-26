@@ -2519,3 +2519,36 @@ document.addEventListener("keydown", (e) => {
 });
 
 autoLogin();
+
+/* ===== PWA Install ===== */
+
+let deferredPrompt = null;
+
+window.addEventListener("beforeinstallprompt", (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+
+  console.log("PWA Install Available");
+
+  // Agar button hai to show karo
+  const btn = document.getElementById("installBtn");
+  if (btn) btn.style.display = "block";
+});
+
+async function installApp() {
+  if (!deferredPrompt) {
+    alert("Install is not available yet.");
+    return;
+  }
+
+  deferredPrompt.prompt();
+
+  const choice = await deferredPrompt.userChoice;
+  console.log(choice.outcome);
+
+  deferredPrompt = null;
+}
+
+window.addEventListener("appinstalled", () => {
+  console.log("TINDER Installed");
+});
