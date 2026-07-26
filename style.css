@@ -565,3 +565,49 @@ input:focus, textarea:focus {
   .messages { padding: 20px 10%; }
   .msg { max-width: 54%; }
 }
+
+/* ================= INSTALL BUTTON ================= */
+
+#installBtn{
+  position: fixed;
+  bottom: 24px;
+  right: 20px;
+  z-index: 9999;
+
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  padding: 14px 22px;
+
+  background: linear-gradient(135deg,#ff4d6d,#ff8a5b);
+  color: #fff;
+
+  border: none;
+  border-radius: 50px;
+
+  font-size: 15px;
+  font-weight: 700;
+
+  box-shadow: 0 10px 25px rgba(255,77,109,.35);
+
+  transition: .25s;
+}
+
+#installBtn:hover{
+  transform: translateY(-3px);
+  box-shadow: 0 16px 35px rgba(255,77,109,.45);
+}
+
+#installBtn:active{
+  transform: scale(.96);
+}
+
+@media(max-width:600px){
+  #installBtn{
+    bottom:20px;
+    right:16px;
+    padding:13px 20px;
+    font-size:14px;
+  }
+     }
