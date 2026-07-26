@@ -2520,39 +2520,33 @@ document.addEventListener("keydown", (e) => {
 
 autoLogin();
 
-/* ===== PWA Install ===== */
+/* ================= PWA INSTALL ================= */
 
 let deferredPrompt = null;
+const installBtn = document.getElementById("installBtn");
 
 window.addEventListener("beforeinstallprompt", (e) => {
-  e.preventDefault();
-  deferredPrompt = e;
+    e.preventDefault();
+    deferredPrompt = e;
 
-  console.log("PWA Install Available");
-
-  // Agar button hai to show karo
-  const btn = document.getElementById("installBtn");
-  if (btn) btn.classList.remove("hidden");
+    if (installBtn) {
+        installBtn.classList.remove("hidden");
+    }
 });
 
-async function installApp() {
-  if (!deferredPrompt) {
-    alert("Install is not available yet.");
-    return;
-  }
+installBtn?.addEventListener("click", async () => {
+    if (!deferredPrompt) return;
 
-  deferredPrompt.prompt();
+    deferredPrompt.prompt();
 
-  const choice = await deferredPrompt.userChoice;
-  console.log(choice.outcome);
+    const { outcome } = await deferredPrompt.userChoice;
+    console.log("Install:", outcome);
 
-  deferredPrompt = null;
-   
-  document.getElementById("installBtn")?.classList.add("hidden");
-}
-                                                       
+    deferredPrompt = null;
+    installBtn.classList.add("hidden");
+});
 
 window.addEventListener("appinstalled", () => {
-  console.log("TINDER Installed");
-  document.getElementById("installBtn")?.classList.add("hidden");
+    console.log("App Installed");
+    installBtn?.classList.add("hidden");
 });
