@@ -572,47 +572,29 @@ input:focus, textarea:focus {
 }
 
 /* ================= INSTALL BUTTON ================= */
-
-#installBtn{
-  position: fixed;
-  bottom: 24px;
-  right: 20px;
-  z-index: 9999;
-
-  display: flex;
-  align-items: center;
-  gap: 8px;
-
-  padding: 14px 22px;
-
-  background: linear-gradient(135deg,#ff4d6d,#ff8a5b);
-  color: #fff;
-
-  border: none;
-  border-radius: 50px;
-
-  font-size: 15px;
-  font-weight: 700;
-
-  box-shadow: 0 10px 25px rgba(255,77,109,.35);
-
-  transition: .25s;
+.install-btn{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:5px;
+    height:34px;
+    padding:0 12px;
+    border:none;
+    border-radius:999px;
+    background:linear-gradient(135deg,#ff4d6d,#ff8a5b);
+    color:#fff;
+    font-size:12px;
+    font-weight:700;
+    box-shadow:0 0 15px rgba(255,77,109,.45);
+    transition:all .25s ease;
+    white-space:nowrap;
 }
 
-#installBtn:hover{
-  transform: translateY(-3px);
-  box-shadow: 0 16px 35px rgba(255,77,109,.45);
+.install-btn:hover{
+    transform:translateY(-1px);
+    box-shadow:0 0 20px rgba(255,77,109,.7);
 }
 
-#installBtn:active{
-  transform: scale(.96);
+.install-btn:active{
+    transform:scale(.95);
 }
-
-@media(max-width:600px){
-  #installBtn{
-    bottom:20px;
-    right:16px;
-    padding:13px 20px;
-    font-size:14px;
-  }
-     }
