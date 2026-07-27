@@ -2682,14 +2682,124 @@ function refreshInstallBtn() {
 
 /* Safari and a few in-app browsers never fire beforeinstallprompt, so
    there is no prompt to open. Rather than a button that does nothing,
-   they get the steps for their own browser. */
+   the card explains the manual route AND reports what the browser
+   actually thinks, so a failing requirement is visible instead of
+   having to be guessed at. */
 function showInstallHelp() {
   const text = isIos()
     ? "Open this page in Safari, tap the Share button, then choose \u201cAdd to Home Screen\u201d."
-    : "Open your browser menu (\u22ee) and choose \u201cInstall app\u201d or \u201cAdd to Home screen\u201d. If that option is missing, TINDER is already installed.";
+    : "Chrome only offers the install dialog once the page has fully settled. Open the browser menu (\u22ee) and choose \u201cInstall app\u201d, or check the list below.";
 
   $("#installHelpText").textContent = text;
   $("#installHelp").classList.remove("hidden");
+  runInstallDiagnostics();
+}
+
+/* Every requirement Chrome checks before it will offer an install */
+async function runInstallDiagnostics() {
+  const box = $("#installDiag");
+  if (!box) return;
+
+  box.textContent = "Checking\u2026";
+
+  const rows = [];
+  const add = (label, ok, note) => rows.push({ label, ok, note });
+
+  add("Secure connection (https)", !!window.isSecureContext);
+
+  /* An install needs an ACTIVE worker. On a first visit it is still
+     installing, which is the usual reason a fresh page cannot install
+     yet — and why a reload so often fixes it. */
+  let swOk = false;
+  let swNote = "not supported by this browser";
+  if ("serviceWorker" in navigator) {
+    try {
+      const reg = await navigator.serviceWorker.getRegistration();
+      swOk = !!(reg && reg.active);
+      swNote = !reg ? "not registered yet"
+             : reg.active ? ""
+             : "still installing \u2014 reload the page";
+    } catch (err) {
+      swNote = "could not be checked";
+    }
+  }
+  add("Service worker active", swOk, swNote);
+
+  /* Manifest, and then every icon it points at */
+  let icons = [];
+  let manifestOk = false;
+  let manifestNote = "";
+  try {
+    const res = await fetch("manifest.json", { cache: "no-store" });
+    manifestOk = res.ok;
+    manifestNote = res.ok ? "" : "HTTP " + res.status;
+    if (res.ok) {
+      const data = await res.json();
+      icons = Array.isArray(data.icons) ? data.icons : [];
+    }
+  } catch (err) {
+    manifestNote = "could not be fetched";
+  }
+  add("manifest.json", manifestOk, manifestNote);
+
+  const missing = [];
+  for (let i = 0; i < icons.length; i++) {
+    const src = icons[i].src;
+    try {
+      const res = await fetch(src, { cache: "no-store" });
+      if (!res.ok) missing.push(src + " (HTTP " + res.status + ")");
+    } catch (err) {
+      missing.push(src + " (unreachable)");
+    }
+  }
+  add("Icon files (" + icons.length + ")", icons.length > 0 && !missing.length, missing.join(", "));
+
+  /* Chrome stays silent when the app is already on the home screen */
+  let installedNote = "";
+  if (isStandalone()) {
+    installedNote = "you are already running the installed app";
+  } else if (navigator.getInstalledRelatedApps) {
+    try {
+      const apps = await navigator.getInstalledRelatedApps();
+      if (apps && apps.length) installedNote = "already installed \u2014 uninstall it to see the prompt again";
+    } catch (err) { /* not available everywhere */ }
+  }
+
+  add(
+    "Install prompt received",
+    !!window.__installPrompt,
+    installedNote || "Chrome has not offered one yet. Stay on the page a few seconds, reload once, then tap \uD83D\uDCE5 again."
+  );
+
+  /* ---- render ---- */
+  box.textContent = "";
+  rows.forEach((row) => {
+    const line = document.createElement("div");
+    line.className = "diag-row" + (row.ok ? "" : " bad");
+
+    const mark = document.createElement("span");
+    mark.className = "diag-mark";
+    mark.textContent = row.ok ? "\u2705" : "\u26A0\uFE0F";
+    line.appendChild(mark);
+
+    const body = document.createElement("div");
+    body.className = "diag-body";
+
+    const label = document.createElement("span");
+    label.className = "diag-label";
+    label.textContent = row.label;
+    body.appendChild(label);
+
+    if (row.note) {
+      const note = document.createElement("span");
+      note.className = "diag-note";
+      note.textContent = row.note;
+      body.appendChild(note);
+    }
+
+    line.appendChild(body);
+    box.appendChild(line);
+  });
 }
 
 $("#installHelpClose").onclick = () => $("#installHelp").classList.add("hidden");
@@ -2723,7 +2833,18 @@ installBtn?.addEventListener("click", async () => {
   }
 });
 
-window.addEventListener("installready", refreshInstallBtn);
+window.addEventListener("installready", () => {
+  refreshInstallBtn();
+
+  /* The event often arrives a few seconds after the page settles. If the
+     help card is open at that moment, close it and install immediately
+     rather than making the user find the button again. */
+  if (!$("#installHelp").classList.contains("hidden")) {
+    $("#installHelp").classList.add("hidden");
+    toast("Ready to install");
+    installBtn?.click();
+  }
+});
 
 window.addEventListener("installdone", () => {
   toast("TINDER installed");
