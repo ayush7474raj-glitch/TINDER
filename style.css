@@ -588,6 +588,24 @@ input:focus, textarea:focus {
 .install-btn:active { transform: scale(.9); }
 .install-btn[disabled] { opacity: .6; pointer-events: none; animation: none; }
 
+/* Install diagnostics, shown inside the help card. Every install
+   requirement is checked against the live page, so a failing one is
+   visible instead of having to be guessed at. */
+.diag { margin: 0 0 18px; font-size: 12.5px; }
+.diag-row {
+  display: flex; gap: 9px; align-items: flex-start;
+  padding: 7px 0; border-bottom: 1px solid var(--line);
+}
+.diag-row:last-child { border-bottom: none; }
+.diag-mark { flex: 0 0 auto; line-height: 1.35; }
+.diag-body { flex: 1; min-width: 0; }
+.diag-label { line-height: 1.35; }
+.diag-row.bad .diag-label { color: var(--danger); }
+.diag-note {
+  display: block; margin-top: 2px;
+  font-size: 11.5px; color: var(--muted); word-break: break-word;
+}
+
 @keyframes installGlow {
   0%, 100% { box-shadow: 0 0 8px rgba(255,77,109,.35); }
   50%      { box-shadow: 0 0 18px rgba(255,77,109,.75); }
